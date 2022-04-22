@@ -135,10 +135,10 @@ app.get("/api/movies", async (req, res, next) => {
   return helper.pagination(res, result, page);
 });
 
-app.delete("/api/movies", async (req, res, next) => {
+app.delete("/api/movies/:id", async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   try {
-    movies = movies.filter((c) => c.id !== req.query.id);
+    movies = movies.filter((c) => c.id !== req.params.id);
     if (req.query.searchTerm != null) {
       let result = movies;
       result = result.filter((item) =>
@@ -152,10 +152,10 @@ app.delete("/api/movies", async (req, res, next) => {
   }
 });
 
-app.put("/api/movies", async (req, res, next) => {
+app.put("/api/movies/:id", async (req, res, next) => {
   try {
     movies = movies.map((p) =>
-      p.id === req.body.movie.id
+      p.id === req.params.id
         ? {
             ...p,
             dislikeActive: req.body.movie.dislikeActive,
