@@ -136,17 +136,9 @@ app.get("/api/movies", async (req, res, next) => {
 });
 
 app.delete("/api/movies/:id", async (req, res, next) => {
-  const page = parseInt(req.query.page) || 1;
   try {
     movies = movies.filter((c) => c.id !== req.params.id);
-    if (req.query.searchTerm != null) {
-      let result = movies;
-      result = result.filter((item) =>
-        item.title.toLowerCase().includes(req.query.searchTerm.toLowerCase())
-      );
-      return helper.pagination(res, result, page);
-    }
-    return helper.pagination(res, movies, page);
+    res.status(200).json({ message: "deleted successfully" });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
