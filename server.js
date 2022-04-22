@@ -2,7 +2,6 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const Promise = require("promise");
 const helper = require("./helper/helper");
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -105,57 +104,49 @@ let movies = [
   },
 ];
 
-const movies$ = new Promise((resolve) => setTimeout(resolve, 100, movies));
-
 app.get("/api/categories", async (req, res, next) => {
   var categories = [];
-  await movies$.then((m) => {
-    m.forEach((movie) => categories.push(movie.category));
-    return res.status(200).json(helper.getUniqueCategories(categories));
-  });
+  movies.forEach((movie) => categories.push(movie.category));
+  return res.status(200).json(helper.getUniqueCategories(categories));
 });
 
 app.get("/api/movies", async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   let searchterm = req.query.searchTerm;
   let categories = req.query.categories;
-  await movies$.then((m) => {
-    let result = m;
-    if (searchterm != null) {
-      result = result.filter((item) =>
-        item.title.toLowerCase().includes(searchterm.toLowerCase())
-      );
-    }
-    if (categories != null) {
-      var type = typeof categories;
-      if (type == "string") {
-        result = result.filter((item) => item.category.includes(categories));
-      } else {
-        result = result.filter((el) => {
-          return categories.some((f) => {
-            return f === el.category;
-          });
+  let result = movies;
+  if (searchterm != null) {
+    result = result.filter((item) =>
+      item.title.toLowerCase().includes(searchterm.toLowerCase())
+    );
+  }
+  if (categories != null) {
+    var type = typeof categories;
+    if (type == "string") {
+      result = result.filter((item) => item.category.includes(categories));
+    } else {
+      result = result.filter((el) => {
+        return categories.some((f) => {
+          return f === el.category;
         });
-      }
+      });
     }
-    return helper.pagination(res, result, page);
-  });
+  }
+  return helper.pagination(res, result, page);
 });
 
-app.delete("/api/movies/:id", async (req, res, next) => {
+app.delete("/api/movies", async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   try {
-    await movies$.then((m) => {
-      m = m.filter((c) => c.id !== req.params.id);
-      if (req.query.searchTerm != null) {
-        let result = m;
-        result = result.filter((item) =>
-          item.title.toLowerCase().includes(req.query.searchTerm.toLowerCase())
-        );
-        return helper.pagination(res, result, page);
-      }
-      return helper.pagination(res, movies, page);
-    });
+    movies = movies.filter((c) => c.id !== req.query.id);
+    if (req.query.searchTerm != null) {
+      let result = movies;
+      result = result.filter((item) =>
+        item.title.toLowerCase().includes(req.query.searchTerm.toLowerCase())
+      );
+      return helper.pagination(res, result, page);
+    }
+    return helper.pagination(res, movies, page);
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
