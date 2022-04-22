@@ -152,6 +152,26 @@ app.delete("/api/movies", async (req, res, next) => {
   }
 });
 
+app.put("/api/movies", async (req, res, next) => {
+  try {
+    movies = movies.map((p) =>
+      p.id === req.body.movie.id
+        ? {
+            ...p,
+            dislikeActive: req.body.movie.dislikeActive,
+            likeActive: req.body.movie.likeActive,
+            likes: req.body.movie.likes,
+            dislikes: req.body.movie.dislikes,
+          }
+        : p
+    );
+
+    return res.status(200).json({ message: "modified successfully" });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
 // start server
 const port = 4000;
 app.listen(port, () => console.log("Server listening on port " + port));
